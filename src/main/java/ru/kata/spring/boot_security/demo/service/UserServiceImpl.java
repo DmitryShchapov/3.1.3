@@ -11,6 +11,7 @@ import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -64,12 +65,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = (User) userDao.findUserByUsername(username);
+        Optional<User> user = Optional.ofNullable(userDao.findUserByUsername(username));
 
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("Username not found");
         }
-        return user;
+        return user.get();
     }
 
 }

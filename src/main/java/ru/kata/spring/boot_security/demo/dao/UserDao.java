@@ -1,7 +1,6 @@
 package ru.kata.spring.boot_security.demo.dao;
 
 
-import org.springframework.security.core.userdetails.UserDetails;
 import ru.kata.spring.boot_security.demo.entity.User;
 
 import java.util.List;
@@ -12,5 +11,5 @@ public interface UserDao {
     void updateUser(User user);
     User getUser(long id);
     void deleteUserById(long id);
-    UserDetails findUserByUsername(String username);
+    User findUserByUsername(String username);
 }
