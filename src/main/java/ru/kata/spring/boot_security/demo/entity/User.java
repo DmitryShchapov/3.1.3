@@ -1,10 +1,17 @@
 package ru.kata.spring.boot_security.demo.entity;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -17,40 +24,40 @@ public class User implements UserDetails {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "firstName")
+    private String firstName;
+
+    @Column(name = "lastName")
+    private String lastName;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "email", unique = true)
+    private String email;
 
     @Column(name = "password")
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Column(name = "roles")
-    private Set<Role> roles;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "surname")
-    private String surname;
-
-    @Column(name = "age")
-    private int age;
-
-    @Column(name = "phone")
-    private String phone;
+    private Set<Role> role = new HashSet<>();
 
 
     public User() {
     }
 
-    public User(String username, String password, Set<Role> roles, String name, String surname, int age, String phone) {
-        this.username = username;
-        this.password = password;
-        this.roles = roles;
-        this.name = name;
-        this.surname = surname;
+    public User(String firstName, String lastName, Integer age, String email, String password, Set<Role> role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.age = age;
-        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 
 
@@ -63,15 +70,50 @@ public class User implements UserDetails {
     }
 
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String email) {
+        this.email = email;
     }
 
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     @Override
     public String getPassword() {
@@ -83,55 +125,39 @@ public class User implements UserDetails {
     }
 
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Set<Role> getRole() {
+        return role;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRole(Set<Role> role) {
+        this.role = role;
+    }
+    public void setRole(Role role) {
+        this.role.add(role);
     }
 
-
-    public String getName() {
-        return name;
+    public boolean hasRole(int roleId) {
+        if (null == role|| 0 == role.size()) {
+            return false;
+        }
+        Optional<Role> findRole = role.stream().filter(role -> roleId == role.getId()).findFirst();
+        return findRole.isPresent();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public boolean hasRole(String roleName) {
+        if (null == role|| 0 == role.size()) {
+            return false;
+        }
+        Optional<Role> findRole = role.stream().filter(role -> roleName.equals(role.getName())).findFirst();
+        return findRole.isPresent();
     }
 
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
 
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
+        return getRole();
     }
 
     @Override
